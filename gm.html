@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Маленький тест</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ffd6e7, #e8d7ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            padding: 20px;
+        }
+
+        .game {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 25px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #e85b91;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        .question {
+            font-size: 21px;
+            font-weight: bold;
+            margin: 25px 0;
+        }
+
+        .doors {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .door {
+            flex: 1;
+            min-height: 180px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(#9b6cff, #6840c9);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 7px 0 #4c2d9a;
+            transition: 0.15s;
+            padding: 15px 8px;
+        }
+
+        .door:active {
+            transform: translateY(6px);
+            box-shadow: 0 1px 0 #4c2d9a;
+        }
+
+        .message {
+            margin-top: 25px;
+            min-height: 30px;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .wrong {
+            color: #e05252;
+        }
+
+        .correct {
+            color: #48a868;
+        }
+
+        .answer-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .answer {
+            border: none;
+            padding: 17px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            background: #ff8fba;
+            color: white;
+            cursor: pointer;
+        }
+
+        .answer:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <!-- Начальный экран -->
+    <div id="startScreen">
+
+        <h1>Маленький тест</h1>
+
+        <p>
+            Тут просто небольшой тест.
+        </p>
+
+        <p>
+            Ну что, готова?
+        </p>
+
+        <button class="answer" onclick="startGame()">
+            Начать
+        </button>
+
+    </div>
+
+
+    <!-- Игровой экран -->
+    <div id="gameScreen" class="hidden">
+
+        <p id="level">Уровень 1 из 3</p>
+
+        <div class="question" id="question"></div>
+
+        <div class="doors">
+
+            <button class="door" onclick="chooseDoor(1)">
+                <span id="door1"></span>
+            </button>
+
+            <button class="door" onclick="chooseDoor(2)">
+                <span id="door2"></span>
+            </button>
+
+            <button class="door" onclick="chooseDoor(3)">
+                <span id="door3"></span>
+            </button>
+
+        </div>
+
+        <div id="message" class="message"></div>
+
+    </div>
+
+
+    <!-- Финальный экран -->
+    <div id="finalScreen" class="hidden">
+
+        <h1>Последний вопрос</h1>
+
+        <p>
+            Мне очень хорошо с тобой. И если тебе тоже,
+            может нам будет хорошо вместе и как паре ну типа…
+            типа там отношения?
+        </p>
+
+        <p>
+            <strong>Ты согласна быть вместе?</strong>
+        </p>
+
+        <div class="answer-buttons">
+
+            <button class="answer" onclick="finalAnswer('yes')">
+                Да
+            </button>
+
+            <button class="answer" onclick="finalAnswer('yes')">
+                Конечно да
+            </button>
+
+            <button class="answer" onclick="finalAnswer('no')">
+                Нет ты че нах
+            </button>
+
+        </div>
+
+        <div id="finalMessage" class="message"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    let level = 0;
+
+
+    const levels = [
+
+        {
+            question: "У кого самые милые глазки?",
+            answers: [
+                "У щененков",
+                "У Алиночки",
+                "У котеночков"
+            ],
+            correct: 2
+        },
+
+        {
+            question: "Кто самый маленький микро челик?",
+            answers: [
+                "Алиночка",
+                "Хз, тут ток один верный вариант",
+                "Согласна со второй дверью"
+            ],
+            correct: 1
+        },
+
+        {
+            question: "Кто самая супер-классная хот герл?",
+            answers: [
+                "Дуа Липа",
+                "Кристал Рид",
+                "Алиночка няшк"
+            ],
+            correct: 3
+        }
+
+    ];
+
+
+    function startGame() {
+
+        document
+            .getElementById("startScreen")
+            .classList.add("hidden");
+
+        document
+            .getElementById("gameScreen")
+            .classList.remove("hidden");
+
+        showLevel();
+    }
+
+
+    function showLevel() {
+
+        const current = levels[level];
+
+        document.getElementById("level").textContent =
+            "Уровень " + (level + 1) + " из 3";
+
+        document.getElementById("question").textContent =
+            current.question;
+
+        document.getElementById("door1").textContent =
+            current.answers[0];
+
+        document.getElementById("door2").textContent =
+            current.answers[1];
+
+        document.getElementById("door3").textContent =
+            current.answers[2];
+
+        document.getElementById("message").textContent = "";
+
+        document.getElementById("message").className =
+            "message";
+    }
+
+
+    function chooseDoor(number) {
+
+        const current = levels[level];
+
+        const message =
+            document.getElementById("message");
+
+
+        if (number === current.correct) {
+
+            level++;
+
+            message.className =
+                "message correct";
+
+            message.textContent =
+                "Правильно";
+
+            setTimeout(function () {
+
+                if (level >= 3) {
+
+                    document
+                        .getElementById("gameScreen")
+                        .classList.add("hidden");
+
+                    document
+                        .getElementById("finalScreen")
+                        .classList.remove("hidden");
+
+                } else {
+
+                    showLevel();
+
+                }
+
+            }, 800);
+
+
+        } else {
+
+            message.className =
+                "message wrong";
+
+            message.textContent =
+                "Не туда. Попробуй ещё раз.";
+
+        }
+    }
+
+
+    function finalAnswer(answer) {
+
+        const message =
+            document.getElementById("finalMessage");
+
+
+        if (answer === "yes") {
+
+            message.className =
+                "message correct";
+
+            message.innerHTML =
+                "Я так и знала.<br><br>" +
+                "Тогда официально: теперь мы вместе.";
+
+        } else {
+
+            message.className =
+                "message wrong";
+
+            message.innerHTML =
+                "Такого варианта в этой игре не существует.<br>" +
+                "Попробуй ещё раз.";
+
+        }
+    }
+
+</script>
+
+</body>
+</html>
