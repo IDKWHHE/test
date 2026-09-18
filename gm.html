@@ -1,208 +1,499 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Маленький тест</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Маленькое приключение</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
+<style>
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: #151522;
+        font-family: Arial, sans-serif;
+        touch-action: none;
+    }
+
+    #game {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Игровой мир */
+
+    #world {
+        position: absolute;
+        width: 900px;
+        height: 600px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: #e8d9c5;
+        border: 12px solid #9b7653;
+        box-shadow: inset 0 0 0 8px #c5a27c;
+    }
+
+    .floor {
+        position: absolute;
+        inset: 35px;
+        background:
+            linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+            linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+            #d8c0a0;
+        background-size: 45px 45px;
+    }
+
+    .wall {
+        position: absolute;
+        background: #b88f68;
+        box-shadow: 0 5px 0 rgba(0,0,0,.12);
+    }
+
+    .wall.top {
+        left: 35px;
+        right: 35px;
+        top: 35px;
+        height: 28px;
+    }
+
+    .wall.bottom {
+        left: 35px;
+        right: 35px;
+        bottom: 35px;
+        height: 28px;
+    }
+
+    .wall.left {
+        top: 35px;
+        bottom: 35px;
+        left: 35px;
+        width: 28px;
+    }
+
+    .wall.right {
+        top: 35px;
+        bottom: 35px;
+        right: 35px;
+        width: 28px;
+    }
+
+    /* Декорации */
+
+    .rug {
+        position: absolute;
+        width: 380px;
+        height: 220px;
+        left: 260px;
+        top: 190px;
+        border-radius: 25px;
+        background: #c9a6c8;
+        border: 8px solid #ad88ae;
+    }
+
+    .table {
+        position: absolute;
+        width: 130px;
+        height: 75px;
+        left: 80px;
+        top: 110px;
+        background: #8d5e3f;
+        border-radius: 12px;
+        box-shadow: 0 9px 0 #68432d;
+    }
+
+    .plant {
+        position: absolute;
+        right: 90px;
+        top: 95px;
+        width: 55px;
+        height: 75px;
+        background: #6e9b61;
+        border-radius: 50%;
+    }
+
+    .plant::after {
+        content: "";
+        position: absolute;
+        width: 45px;
+        height: 30px;
+        background: #a36c4b;
+        bottom: -15px;
+        left: 5px;
+        border-radius: 8px;
+    }
+
+    /* Двери */
+
+    .door {
+        position: absolute;
+        width: 95px;
+        height: 145px;
+        bottom: 63px;
+        background: #754a35;
+        border: 7px solid #513324;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .door:hover {
+        transform: translateY(-5px);
+    }
+
+    .door::before {
+        content: "";
+        position: absolute;
+        width: 9px;
+        height: 9px;
+        background: #e8c76a;
+        border-radius: 50%;
+        right: 14px;
+        top: 72px;
+    }
+
+    #door1 {
+        left: 170px;
+    }
+
+    #door2 {
+        left: 402px;
+    }
+
+    #door3 {
+        right: 170px;
+    }
+
+    /* Персонаж */
+
+    #player {
+        position: absolute;
+        width: 38px;
+        height: 48px;
+        background: #ff8fba;
+        border-radius: 18px 18px 12px 12px;
+        z-index: 20;
+        box-shadow: 0 4px 0 rgba(0,0,0,.2);
+    }
+
+    #player::before {
+        content: "";
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        left: 3px;
+        top: -18px;
+        background: #ffd8c2;
+        border-radius: 50%;
+        border: 3px solid #8f5947;
+    }
+
+    #player::after {
+        content: "";
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        left: 10px;
+        top: -5px;
+        background: #333;
+        border-radius: 50%;
+        box-shadow: 14px 0 #333;
+    }
+
+    /* Интерфейс */
+
+    #topUI {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        background: rgba(255,255,255,.92);
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #555;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,.2);
+    }
+
+    #hint {
+        position: absolute;
+        left: 50%;
+        bottom: 25px;
+        transform: translateX(-50%);
+        z-index: 100;
+        background: rgba(255,255,255,.95);
+        padding: 12px 20px;
+        border-radius: 18px;
+        font-weight: bold;
+        color: #555;
+        text-align: center;
+        min-width: 230px;
+    }
+
+    /* Джойстик */
+
+    #joystick {
+        position: absolute;
+        left: 25px;
+        bottom: 25px;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.25);
+        border: 3px solid rgba(255,255,255,.5);
+        z-index: 200;
+    }
+
+    #stick {
+        position: absolute;
+        width: 58px;
+        height: 58px;
+        left: 33px;
+        top: 33px;
+        border-radius: 50%;
+        background: rgba(255,143,186,.9);
+        border: 4px solid white;
+    }
+
+    /* Кнопка взаимодействия */
+
+    #interact {
+        display: none;
+        position: absolute;
+        right: 25px;
+        bottom: 35px;
+        z-index: 200;
+        border: none;
+        background: #ff8fba;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 18px;
+        font-size: 18px;
+        font-weight: bold;
+        box-shadow: 0 5px 0 #c75b87;
+    }
+
+    #interact:active {
+        transform: translateY(4px);
+        box-shadow: 0 1px 0 #c75b87;
+    }
+
+    /* Окна */
+
+    .screen {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #ffd6e7, #e8d7ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        padding: 20px;
+    }
+
+    .box {
+        width: 100%;
+        max-width: 500px;
+        background: white;
+        padding: 30px 25px;
+        border-radius: 25px;
+        text-align: center;
+        box-shadow: 0 12px 35px rgba(0,0,0,.2);
+    }
+
+    h1 {
+        color: #e85b91;
+        margin-top: 0;
+    }
+
+    p {
+        font-size: 18px;
+        line-height: 1.5;
+    }
+
+    .button {
+        border: none;
+        background: #ff8fba;
+        color: white;
+        padding: 16px 28px;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .questionButton {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    /* На маленьком экране уменьшаем мир */
+
+    @media (max-width: 700px) {
+        #world {
+            transform: translate(-50%, -50%) scale(.65);
         }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffd6e7, #e8d7ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #333;
-            padding: 20px;
+        #hint {
+            bottom: 165px;
+            font-size: 14px;
         }
 
-        .game {
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            border-radius: 25px;
-            padding: 25px 20px;
-            text-align: center;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+        #joystick {
+            bottom: 20px;
+            left: 15px;
         }
 
-        h1 {
-            margin-top: 0;
-            color: #e85b91;
+        #interact {
+            bottom: 35px;
+            right: 15px;
         }
-
-        p {
-            font-size: 18px;
-            line-height: 1.5;
-        }
-
-        .question {
-            font-size: 21px;
-            font-weight: bold;
-            margin: 25px 0;
-        }
-
-        .doors {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        .door {
-            flex: 1;
-            min-height: 180px;
-            border: none;
-            border-radius: 18px;
-            background: linear-gradient(#9b6cff, #6840c9);
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 7px 0 #4c2d9a;
-            transition: 0.15s;
-            padding: 15px 8px;
-        }
-
-        .door:active {
-            transform: translateY(6px);
-            box-shadow: 0 1px 0 #4c2d9a;
-        }
-
-        .message {
-            margin-top: 25px;
-            min-height: 30px;
-            font-weight: bold;
-            font-size: 17px;
-        }
-
-        .wrong {
-            color: #e05252;
-        }
-
-        .correct {
-            color: #48a868;
-        }
-
-        .answer-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        .answer {
-            border: none;
-            padding: 17px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            background: #ff8fba;
-            color: white;
-            cursor: pointer;
-        }
-
-        .answer:active {
-            transform: scale(0.98);
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
+    }
+</style>
 </head>
 
 <body>
 
-<div class="game">
+<div id="game">
 
-    <!-- Начальный экран -->
-    <div id="startScreen">
+    <!-- Начало -->
 
-        <h1>Маленький тест</h1>
+    <div id="startScreen" class="screen">
+        <div class="box">
+            <h1>Маленькое приключение</h1>
 
-        <p>
-            Тут просто небольшой тест.
-        </p>
+            <p>
+                Тебе нужно пройти несколько комнат
+                и найти правильные двери.
+            </p>
 
-        <p>
-            Ну что, готова?
-        </p>
+            <p>
+                На компьютере ходи стрелками или WASD.
+                На телефоне используй джойстик.
+            </p>
 
-        <button class="answer" onclick="startGame()">
-            Начать
-        </button>
+            <button class="button" onclick="startGame()">
+                Начать
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Игра -->
+
+    <div id="world">
+
+        <div class="floor"></div>
+
+        <div class="wall top"></div>
+        <div class="wall bottom"></div>
+        <div class="wall left"></div>
+        <div class="wall right"></div>
+
+        <div class="rug"></div>
+        <div class="table"></div>
+        <div class="plant"></div>
+
+        <div class="door" id="door1"></div>
+        <div class="door" id="door2"></div>
+        <div class="door" id="door3"></div>
+
+        <div id="player"></div>
 
     </div>
 
 
-    <!-- Игровой экран -->
-    <div id="gameScreen" class="hidden">
+    <!-- Интерфейс -->
 
-        <p id="level">Уровень 1 из 3</p>
+    <div id="topUI">
+        Комната 1 из 3
+    </div>
 
-        <div class="question" id="question"></div>
+    <div id="hint">
+        Подойди к двери
+    </div>
 
-        <div class="doors">
+    <button id="interact" onclick="interact()">
+        Открыть
+    </button>
 
-            <button class="door" onclick="chooseDoor(1)">
-                <span id="door1"></span>
-            </button>
 
-            <button class="door" onclick="chooseDoor(2)">
-                <span id="door2"></span>
-            </button>
+    <!-- Джойстик -->
 
-            <button class="door" onclick="chooseDoor(3)">
-                <span id="door3"></span>
-            </button>
+    <div id="joystick">
+        <div id="stick"></div>
+    </div>
+
+
+    <!-- Вопрос -->
+
+    <div id="questionScreen" class="screen hidden">
+        <div class="box">
+
+            <h1 id="questionTitle">
+                Вопрос
+            </h1>
+
+            <p id="questionText"></p>
+
+            <div id="answers"></div>
 
         </div>
-
-        <div id="message" class="message"></div>
-
     </div>
 
 
-    <!-- Финальный экран -->
-    <div id="finalScreen" class="hidden">
+    <!-- Финал -->
 
-        <h1>Последний вопрос</h1>
+    <div id="finalScreen" class="screen hidden">
+        <div class="box">
 
-        <p>
-            Мне очень хорошо с тобой. И если тебе тоже,
-            может нам будет хорошо вместе и как паре ну типа…
-            типа там отношения?
-        </p>
+            <h1>Последняя комната</h1>
 
-        <p>
-            <strong>Ты согласна быть вместе?</strong>
-        </p>
+            <p>
+                Мне очень хорошо с тобой.
+                И если тебе тоже, может нам будет
+                хорошо вместе и как паре ну типа...
+                типа там отношения?
+            </p>
 
-        <div class="answer-buttons">
+            <p>
+                <strong>
+                    Ты согласна быть вместе?
+                </strong>
+            </p>
 
-            <button class="answer" onclick="finalAnswer('yes')">
+            <button class="button questionButton"
+                    onclick="finalAnswer(true)">
                 Да
             </button>
 
-            <button class="answer" onclick="finalAnswer('yes')">
+            <button class="button questionButton"
+                    onclick="finalAnswer(true)">
                 Конечно да
             </button>
 
-            <button class="answer" onclick="finalAnswer('no')">
+            <button class="button questionButton"
+                    onclick="finalAnswer(false)">
                 Нет ты че нах
             </button>
 
+            <p id="finalMessage"></p>
+
         </div>
-
-        <div id="finalMessage" class="message"></div>
-
     </div>
 
 </div>
@@ -210,43 +501,79 @@
 
 <script>
 
-    let level = 0;
-
+    /* =========================
+       НАСТРОЙКИ ИГРЫ
+    ========================= */
 
     const levels = [
 
         {
             question: "У кого самые милые глазки?",
+
             answers: [
                 "У щененков",
                 "У Алиночки",
                 "У котеночков"
             ],
-            correct: 2
+
+            correct: 1
         },
 
         {
             question: "Кто самый маленький микро челик?",
+
             answers: [
                 "Алиночка",
                 "Хз, тут ток один верный вариант",
                 "Согласна со второй дверью"
             ],
-            correct: 1
+
+            correct: 0
         },
 
         {
             question: "Кто самая супер-классная хот герл?",
+
             answers: [
                 "Дуа Липа",
                 "Кристал Рид",
                 "Алиночка няшк"
             ],
-            correct: 3
+
+            correct: 2
         }
 
     ];
 
+
+    let currentLevel = 0;
+
+    let gameStarted = false;
+
+    let nearbyDoor = null;
+
+    let playerX = 430;
+    let playerY = 440;
+
+    const speed = 3;
+
+
+    const player =
+        document.getElementById("player");
+
+    const hint =
+        document.getElementById("hint");
+
+    const interactButton =
+        document.getElementById("interact");
+
+    const topUI =
+        document.getElementById("topUI");
+
+
+    /* =========================
+       СТАРТ
+    ========================= */
 
     function startGame() {
 
@@ -254,90 +581,384 @@
             .getElementById("startScreen")
             .classList.add("hidden");
 
-        document
-            .getElementById("gameScreen")
-            .classList.remove("hidden");
+        gameStarted = true;
 
-        showLevel();
+        setPlayerPosition();
+
+        updateRoom();
     }
 
 
-    function showLevel() {
+    /* =========================
+       ПОЗИЦИЯ ПЕРСОНАЖА
+    ========================= */
 
-        const current = levels[level];
+    function setPlayerPosition() {
 
-        document.getElementById("level").textContent =
-            "Уровень " + (level + 1) + " из 3";
+        player.style.left =
+            playerX + "px";
 
-        document.getElementById("question").textContent =
-            current.question;
-
-        document.getElementById("door1").textContent =
-            current.answers[0];
-
-        document.getElementById("door2").textContent =
-            current.answers[1];
-
-        document.getElementById("door3").textContent =
-            current.answers[2];
-
-        document.getElementById("message").textContent = "";
-
-        document.getElementById("message").className =
-            "message";
+        player.style.top =
+            playerY + "px";
     }
 
 
-    function chooseDoor(number) {
+    /* =========================
+       КЛАВИАТУРА
+    ========================= */
 
-        const current = levels[level];
+    const keys = {};
 
-        const message =
-            document.getElementById("message");
+    document.addEventListener("keydown", function(event) {
+
+        keys[event.key.toLowerCase()] = true;
+
+        if (
+            event.key === "ArrowUp" ||
+            event.key === "ArrowDown" ||
+            event.key === "ArrowLeft" ||
+            event.key === "ArrowRight"
+        ) {
+            event.preventDefault();
+        }
+
+    });
 
 
-        if (number === current.correct) {
+    document.addEventListener("keyup", function(event) {
 
-            level++;
+        keys[event.key.toLowerCase()] = false;
 
-            message.className =
-                "message correct";
+    });
 
-            message.textContent =
-                "Правильно";
 
-            setTimeout(function () {
+    /* =========================
+       ДВИЖЕНИЕ
+    ========================= */
 
-                if (level >= 3) {
+    let joystickX = 0;
+    let joystickY = 0;
 
-                    document
-                        .getElementById("gameScreen")
-                        .classList.add("hidden");
 
-                    document
-                        .getElementById("finalScreen")
-                        .classList.remove("hidden");
+    function movePlayer() {
 
-                } else {
+        if (!gameStarted) {
+            requestAnimationFrame(movePlayer);
+            return;
+        }
 
-                    showLevel();
+        let dx = 0;
+        let dy = 0;
 
-                }
 
-            }, 800);
+        if (keys["arrowup"] || keys["w"]) {
+            dy -= speed;
+        }
 
+        if (keys["arrowdown"] || keys["s"]) {
+            dy += speed;
+        }
+
+        if (keys["arrowleft"] || keys["a"]) {
+            dx -= speed;
+        }
+
+        if (keys["arrowright"] || keys["d"]) {
+            dx += speed;
+        }
+
+
+        dx += joystickX * speed;
+        dy += joystickY * speed;
+
+
+        if (dx !== 0 || dy !== 0) {
+
+            playerX += dx;
+            playerY += dy;
+
+            checkBoundaries();
+
+            setPlayerPosition();
+
+            checkDoors();
+        }
+
+
+        requestAnimationFrame(movePlayer);
+    }
+
+
+    function checkBoundaries() {
+
+        playerX =
+            Math.max(70,
+                Math.min(790, playerX));
+
+        playerY =
+            Math.max(85,
+                Math.min(480, playerY));
+
+    }
+
+
+    /* =========================
+       ДВЕРИ
+    ========================= */
+
+    function checkDoors() {
+
+        const doors = [
+            document.getElementById("door1"),
+            document.getElementById("door2"),
+            document.getElementById("door3")
+        ];
+
+
+        nearbyDoor = null;
+
+
+        doors.forEach(function(door, index) {
+
+            const rect = {
+                x: parseInt(door.style.left) ||
+                    door.offsetLeft,
+
+                y: door.offsetTop,
+
+                width: door.offsetWidth,
+
+                height: door.offsetHeight
+            };
+
+
+            const centerX =
+                rect.x + rect.width / 2;
+
+            const centerY =
+                rect.y + rect.height / 2;
+
+
+            const distance =
+                Math.sqrt(
+                    Math.pow(playerX - centerX, 2) +
+                    Math.pow(playerY - centerY, 2)
+                );
+
+
+            if (distance < 100) {
+
+                nearbyDoor = index;
+
+            }
+
+        });
+
+
+        if (nearbyDoor !== null) {
+
+            hint.textContent =
+                "Ты рядом с дверью";
+
+            interactButton.style.display =
+                "block";
 
         } else {
 
-            message.className =
-                "message wrong";
+            hint.textContent =
+                "Подойди к двери";
 
-            message.textContent =
-                "Не туда. Попробуй ещё раз.";
+            interactButton.style.display =
+                "none";
 
         }
+
     }
 
+
+    /* Можно нажать Enter/Space */
+
+    document.addEventListener("keydown", function(event) {
+
+        if (
+            (event.key === "Enter" ||
+             event.key === " ") &&
+            nearbyDoor !== null
+        ) {
+            interact();
+        }
+
+    });
+
+
+    function interact() {
+
+        if (nearbyDoor === null) {
+            return;
+        }
+
+
+        const correctDoor =
+            levels[currentLevel].correct;
+
+
+        if (nearbyDoor === correctDoor) {
+
+            openQuestion();
+
+        } else {
+
+            hint.textContent =
+                "Эта дверь пока не подходит";
+
+            setTimeout(function() {
+
+                if (nearbyDoor !== null) {
+                    hint.textContent =
+                        "Ты рядом с дверью";
+                }
+
+            }, 1200);
+
+        }
+
+    }
+
+
+    /* =========================
+       ВОПРОС
+    ========================= */
+
+    function openQuestion() {
+
+        const level =
+            levels[currentLevel];
+
+
+        document
+            .getElementById("questionText")
+            .textContent =
+            level.question;
+
+
+        const answers =
+            document.getElementById("answers");
+
+
+        answers.innerHTML = "";
+
+
+        level.answers.forEach(function(answer, index) {
+
+            const button =
+                document.createElement("button");
+
+            button.className =
+                "button questionButton";
+
+            button.textContent =
+                answer;
+
+
+            button.onclick =
+                function() {
+
+                    answerQuestion(index);
+
+                };
+
+
+            answers.appendChild(button);
+
+        });
+
+
+        document
+            .getElementById("questionScreen")
+            .classList.remove("hidden");
+
+    }
+
+
+    function answerQuestion(index) {
+
+        const level =
+            levels[currentLevel];
+
+
+        if (index !== level.correct) {
+
+            document
+                .getElementById("questionTitle")
+                .textContent =
+                "Не совсем";
+
+            setTimeout(function() {
+
+                document
+                    .getElementById("questionTitle")
+                    .textContent =
+                    "Вопрос";
+
+            }, 900);
+
+            return;
+
+        }
+
+
+        currentLevel++;
+
+
+        document
+            .getElementById("questionScreen")
+            .classList.add("hidden");
+
+
+        if (currentLevel >= levels.length) {
+
+            setTimeout(function() {
+
+                document
+                    .getElementById("finalScreen")
+                    .classList.remove("hidden");
+
+            }, 500);
+
+        } else {
+
+            updateRoom();
+
+            playerX = 430;
+            playerY = 440;
+
+            setPlayerPosition();
+
+        }
+
+    }
+
+
+    /* =========================
+       ОБНОВЛЕНИЕ КОМНАТЫ
+    ========================= */
+
+    function updateRoom() {
+
+        topUI.textContent =
+            "Комната " +
+            (currentLevel + 1) +
+            " из 3";
+
+        hint.textContent =
+            "Найди правильную дверь";
+
+    }
+
+
+    /* =========================
+       ФИНАЛ
+    ========================= */
 
     function finalAnswer(answer) {
 
@@ -345,26 +966,174 @@
             document.getElementById("finalMessage");
 
 
-        if (answer === "yes") {
-
-            message.className =
-                "message correct";
+        if (answer) {
 
             message.innerHTML =
                 "Я так и знала.<br><br>" +
                 "Тогда официально: теперь мы вместе.";
 
-        } else {
+            message.style.color =
+                "#48a868";
 
-            message.className =
-                "message wrong";
+        } else {
 
             message.innerHTML =
                 "Такого варианта в этой игре не существует.<br>" +
                 "Попробуй ещё раз.";
 
+            message.style.color =
+                "#e05252";
+
         }
+
     }
+
+
+    /* =========================
+       ДЖОЙСТИК
+    ========================= */
+
+    const joystick =
+        document.getElementById("joystick");
+
+    const stick =
+        document.getElementById("stick");
+
+
+    let joystickActive = false;
+
+
+    function updateJoystick(clientX, clientY) {
+
+        const rect =
+            joystick.getBoundingClientRect();
+
+
+        const centerX =
+            rect.left + rect.width / 2;
+
+        const centerY =
+            rect.top + rect.height / 2;
+
+
+        let dx =
+            clientX - centerX;
+
+        let dy =
+            clientY - centerY;
+
+
+        const maxDistance = 35;
+
+
+        const distance =
+            Math.sqrt(dx * dx + dy * dy);
+
+
+        if (distance > maxDistance) {
+
+            dx =
+                dx / distance *
+                maxDistance;
+
+            dy =
+                dy / distance *
+                maxDistance;
+
+        }
+
+
+        stick.style.transform =
+            "translate(" +
+            dx +
+            "px, " +
+            dy +
+            "px)";
+
+
+        joystickX =
+            dx / maxDistance;
+
+        joystickY =
+            dy / maxDistance;
+
+    }
+
+
+    function resetJoystick() {
+
+        joystickActive = false;
+
+        joystickX = 0;
+        joystickY = 0;
+
+        stick.style.transform =
+            "translate(0, 0)";
+
+    }
+
+
+    joystick.addEventListener(
+        "touchstart",
+        function(event) {
+
+            joystickActive = true;
+
+            const touch =
+                event.touches[0];
+
+            updateJoystick(
+                touch.clientX,
+                touch.clientY
+            );
+
+        },
+        { passive: false }
+    );
+
+
+    joystick.addEventListener(
+        "touchmove",
+        function(event) {
+
+            if (!joystickActive) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const touch =
+                event.touches[0];
+
+            updateJoystick(
+                touch.clientX,
+                touch.clientY
+            );
+
+        },
+        { passive: false }
+    );
+
+
+    joystick.addEventListener(
+        "touchend",
+        resetJoystick
+    );
+
+
+    joystick.addEventListener(
+        "touchcancel",
+        resetJoystick
+    );
+
+
+    /* =========================
+       ЗАПУСК ЦИКЛА
+    ========================= */
+
+    setPlayerPosition();
+
+    movePlayer();
 
 </script>
 
